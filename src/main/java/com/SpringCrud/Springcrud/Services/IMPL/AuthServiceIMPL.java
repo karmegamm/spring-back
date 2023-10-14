@@ -1,5 +1,6 @@
 package com.SpringCrud.Springcrud.Services.IMPL;
 
+import com.SpringCrud.Springcrud.DTO.UpdateDTO;
 import com.SpringCrud.Springcrud.DTO.UserSignUpDTO;
 import com.SpringCrud.Springcrud.Entity.Users;
 import com.SpringCrud.Springcrud.Repo.SignUpRepo;
@@ -37,5 +38,32 @@ public class AuthServiceIMPL implements AuthenticateService {
             }
         }
         return null;
+    }
+
+    @Override
+    public Users updateProfile(Long userId, UpdateDTO updateDTO) {
+        Users user = signUpRepo.findByUserid(userId);
+
+        if (user == null) {
+            return null; // User not found
+        }
+
+        if (!passwordEncoder.matches(updateDTO.getOld_password(), user.getPassword())) {
+            return null; // Old password doesn't match
+        }
+
+        // Check if the new fields are not null or empty
+        if (updateDTO.getUsername() == null || updateDTO.getUsername().isEmpty() ||
+                updateDTO.getEmail() == null || updateDTO.getEmail().isEmpty() ||
+                updateDTO.getCurrent_password() == null || updateDTO.getCurrent_password().isEmpty()) {
+            return null; // Invalid input data
+        }
+        // Update the user's profile
+        user.setUsername(updateDTO.getUsername());
+        user.setEmail(updateDTO.getEmail());
+        user.setPassword(this.passwordEncoder.encode(updateDTO.getCurrent_password()));
+        signUpRepo.save(user);
+
+        return user;
     }
 }

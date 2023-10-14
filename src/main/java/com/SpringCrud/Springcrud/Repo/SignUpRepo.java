@@ -12,4 +12,6 @@ import java.util.Optional;
 public interface SignUpRepo extends JpaRepository<Users,Integer> {
     Optional<Users> findOneByEmailAndPassword(String email,String password);
     Users findByEmail(String email);
+
+    Users findByUserid(Long userid);
 }

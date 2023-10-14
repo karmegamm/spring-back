@@ -1,5 +1,6 @@
 package com.SpringCrud.Springcrud.Controller;
 
+import com.SpringCrud.Springcrud.DTO.UpdateDTO;
 import com.SpringCrud.Springcrud.DTO.UserSignUpDTO;
 import com.SpringCrud.Springcrud.Entity.Users;
 import com.SpringCrud.Springcrud.Services.AuthenticateService;
@@ -30,5 +31,20 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
         }
     }
+
+    @PutMapping("/{userId}")
+    public ResponseEntity<?> updateProfile(@PathVariable Long userId, @RequestBody UpdateDTO updateDTO) {
+        System.out.println(userId);
+        Users updatedProfile = authServise.updateProfile(userId, updateDTO);
+        String errorMessage;
+        if (updatedProfile != null) {
+            return ResponseEntity.ok(updatedProfile);
+        } else {
+            errorMessage = "Authentication failed. Please check your credentials.";
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
+    }
+
+
 
 }
