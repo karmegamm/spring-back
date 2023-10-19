@@ -7,10 +7,10 @@ import java.util.Objects;
 
 @Embeddable
 public class BookKey implements Serializable {
-    @Column(name = "book_name")
+    @Column(name = "book_name",length = 255)
     private String bookName;
 
-    @Column(name = "author")
+    @Column(name = "author",length = 254)
     private String author;
 
     public BookKey() {
