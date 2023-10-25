@@ -1,10 +1,13 @@
 package com.SpringCrud.Springcrud.Controller;
 
 import com.SpringCrud.Springcrud.DTO.BookDTO;
-import com.SpringCrud.Springcrud.Entity.Book;
-import com.SpringCrud.Springcrud.Entity.Title;
+import com.SpringCrud.Springcrud.Entity.*;
+import com.SpringCrud.Springcrud.Entity.Cart.Cart;
 import com.SpringCrud.Springcrud.Repo.TitleRepo;
 import com.SpringCrud.Springcrud.Services.BookService;
+import com.SpringCrud.Springcrud.Services.IMPL.CartService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -23,9 +26,13 @@ public class BookController {
     @Autowired
     private TitleRepo titleRepo;
     @Autowired
+    private CartService cartService;
+    @Autowired
     public BookController(BookService bookService) {
         this.bookService = bookService;
     }
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @PostMapping(value = "/save")
     public ResponseEntity<String> createBook(@ModelAttribute BookDTO bookDTO) {
@@ -35,6 +42,17 @@ public class BookController {
         } catch (Exception e) {
             // Handle any exceptions, e.g., file upload or database errors
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating the book.");
+        }
+    }
+
+    @PutMapping("/update-stock")
+    public ResponseEntity<String> updateStock(@RequestParam Long bookId, @RequestParam int quantityToSubtract) {
+        try {
+            // Call the service to update the stock quantity
+            bookService.subtractStock(bookId, quantityToSubtract);
+            return ResponseEntity.ok("Stock quantity updated successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating stock quantity: " + e.getMessage());
         }
     }
     @PostMapping(value = "/newtitle")
@@ -72,4 +90,45 @@ public class BookController {
         List<Title> titles = titleRepo.findAllTitles();
         return ResponseEntity.ok(titles);
     }
+
+
+    @PostMapping("/add-to-cart")
+    public ResponseEntity<String> createCartEntry(
+            @RequestParam Long bookId,
+            @RequestParam Long userId
+    ) {
+        try {
+            Cart cart = new Cart(bookId, userId);
+            cartService.addToCart(cart);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Cart entity saved successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error saving Cart entity: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/get-cart-books-by-userid")
+    public ResponseEntity<List<Long>> getBookstoCart(
+            @RequestParam Long userId
+    ) {
+        List<Long> bookIds ;
+        try {
+            bookIds=cartService.getBooksByUserId(userId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(bookIds);
+        } catch (Exception e) {
+            return (ResponseEntity<List<Long>>) ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/get-books-in-ids")
+    public ResponseEntity<List<Book>> getBooksByIds(@RequestBody List<Long> bookIds) {
+        List<Book> books ;
+        try {
+            books= bookService.getBooksByIds(bookIds);
+            return ResponseEntity.ok(books);
+        } catch (Exception e) {
+            return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
 }

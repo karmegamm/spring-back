@@ -22,6 +22,7 @@ public class BookServiceIMPL implements BookService {
 
     @Autowired
     private BookRepo bookRepo;
+
     @Autowired
     private TitleRepo titleRepo;
     @Override
@@ -82,6 +83,18 @@ public class BookServiceIMPL implements BookService {
     }
 
     @Override
+    public void subtractStock(Long bookId, int quantityToSubtract) throws Exception {
+        Book book = bookRepo.findByBookId(bookId).orElseThrow(() -> new Exception("Book not found with ID: " + bookId));
+        int currentStock = book.getStockQuantity();
+        if (currentStock - quantityToSubtract >= 0) {
+            book.setStockQuantity(currentStock - quantityToSubtract);
+            bookRepo.save(book);
+        } else {
+            throw new Exception("Insufficient stock for book with ID: " + bookId);
+        }
+    }
+
+    @Override
     public List<Book> getbooksbytitle(String title,Pageable pageable) {
         List<Book> newBook = new ArrayList<>();
         try{
@@ -91,6 +104,12 @@ public class BookServiceIMPL implements BookService {
             e.printStackTrace();
         }
         return newBook;
+    }
+
+    @Override
+    public List<Book> getBooksByIds(List<Long> bookIds) {
+        List<Book> books = bookRepo.findAllByIds(bookIds);
+        return books;
     }
 
 }

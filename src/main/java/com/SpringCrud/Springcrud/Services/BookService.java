@@ -17,4 +17,8 @@ public interface BookService {
     List<Title> getTitles(Pageable pageable);
 
     List<Book> getbooksbytitle(String title,Pageable pageable);
+
+    public void subtractStock(Long bookId, int quantityToSubtract) throws Exception;
+
+    List<Book> getBooksByIds(List<Long> bookIds);
 }
